@@ -39,6 +39,18 @@ public final class PieChartDataValidator extends ObjectValidator
             {
                 // TODO
             }
+
+            @Override
+            public boolean isIgnored() {
+                // TODO Auto-generated method stub
+                return false;
+            }
+
+            @Override
+            public String getTypeName() {
+                // TODO Auto-generated method stub
+                return null;
+            }
         }, true);
         addAttribute("categoriesProperty", StringValidator.INSTANCE, false);
         
