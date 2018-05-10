@@ -29,23 +29,23 @@ import com.ait.lienzo.client.core.shape.json.validators.IAttributeTypeValidator;
 
 public class ChartAttributeType extends AttributeType
 {
-    public final static ChartAttributeType ALIGN               = new ChartAttributeType(new EnumValidator<ChartAlign>("align", ChartAlign.values()));
+    public static final ChartAttributeType ALIGN               = new ChartAttributeType(new EnumValidator<ChartAlign>("align", ChartAlign.values()));
 
-    public final static ChartAttributeType DIRECTION           = new ChartAttributeType(new EnumValidator<ChartDirection>("direction", ChartDirection.values()));
+    public static final ChartAttributeType DIRECTION           = new ChartAttributeType(new EnumValidator<ChartDirection>("direction", ChartDirection.values()));
 
-    public final static ChartAttributeType ORIENTATION         = new ChartAttributeType(new EnumValidator<ChartOrientation>("orientation", ChartOrientation.values()));
+    public static final ChartAttributeType ORIENTATION         = new ChartAttributeType(new EnumValidator<ChartOrientation>("orientation", ChartOrientation.values()));
 
-    public final static ChartAttributeType LEGEND_POSITION     = new ChartAttributeType(new EnumValidator<LegendPosition>("LegendPosition", LegendPosition.values()));
+    public static final ChartAttributeType LEGEND_POSITION     = new ChartAttributeType(new EnumValidator<LegendPosition>("LegendPosition", LegendPosition.values()));
 
-    public final static ChartAttributeType LEGEND_ALIGN        = new ChartAttributeType(new EnumValidator<LegendAlign>("LegendAlign", LegendAlign.values()));
+    public static final ChartAttributeType LEGEND_ALIGN        = new ChartAttributeType(new EnumValidator<LegendAlign>("LegendAlign", LegendAlign.values()));
 
-    public final static ChartAttributeType AXIS_TYPE           = new ChartAttributeType(AxisValidator.INSTANCE);
+    public static final ChartAttributeType AXIS_TYPE           = new ChartAttributeType(AxisValidator.INSTANCE);
 
-    public final static ChartAttributeType LABELS_POSITION     = new ChartAttributeType(new EnumValidator<LabelsPosition>("labelsPosition", LabelsPosition.values()));
+    public static final ChartAttributeType LABELS_POSITION     = new ChartAttributeType(new EnumValidator<LabelsPosition>("labelsPosition", LabelsPosition.values()));
 
-    public final static ChartAttributeType XY_CHART_DATA_TYPE  = new ChartAttributeType(new ArrayValidator(XYChartSeriesValidator.INSTANCE));
+    public static final ChartAttributeType XY_CHART_DATA_TYPE  = new ChartAttributeType(new ArrayValidator(XYChartSeriesValidator.INSTANCE));
 
-    public final static ChartAttributeType PIE_CHART_DATA_TYPE = new ChartAttributeType(new ArrayValidator(PieChartDataValidator.INSTANCE));
+    public static final ChartAttributeType PIE_CHART_DATA_TYPE = new ChartAttributeType(new ArrayValidator(PieChartDataValidator.INSTANCE));
 
     protected ChartAttributeType(IAttributeTypeValidator validator)
     {
