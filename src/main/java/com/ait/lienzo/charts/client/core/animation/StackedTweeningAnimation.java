@@ -85,18 +85,23 @@ public class StackedTweeningAnimation extends TimedAnimation
     public IAnimation doFrame()
     {
         final int size = m_animations.size();
+       
+        // cada frame na verdade é um objeto
 
         for (int i = 0; i < size; i++)
-        {
+        {            
             NodeAnimation nodeAnimation = m_animations.get(i);
-
-            boolean draw = apply(nodeAnimation, getPercent());
+            
+            double percent = getPercent();
+            
+            boolean draw = apply(nodeAnimation, percent);
 
             if (draw)
             {
                 getNode().getLayer().batch();
             }
-        }
+        }        
+  
         return super.doFrame();
     }
 
@@ -167,7 +172,7 @@ public class StackedTweeningAnimation extends TimedAnimation
             percent = m_tweener.apply(percent);
         }
         if (null != nodeAnimation.m_workingset)
-        {
+        {          
             final int size = nodeAnimation.m_workingset.size();
 
             if (size > 0)

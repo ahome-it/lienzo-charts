@@ -20,7 +20,10 @@ package com.ait.lienzo.charts.client.core.pie;
 
 import com.ait.lienzo.charts.client.core.model.PieChartData;
 import com.ait.lienzo.charts.client.core.pie.animation.PieChartClearAnimation;
+import com.ait.lienzo.charts.client.core.pie.animation.PieChartCreateAnimation;
+import com.ait.lienzo.charts.client.core.pie.animation.PieChartReloadAnimation;
 import com.ait.lienzo.charts.client.core.pie.animation.PieChartResizeAnimation;
+import com.ait.lienzo.charts.client.core.xy.bar.animation.BarChartReloadAnimation;
 import com.ait.lienzo.client.core.animation.AnimationCallback;
 import com.ait.lienzo.client.core.animation.AnimationTweener;
 import com.ait.lienzo.client.core.animation.IAnimation;
@@ -47,7 +50,7 @@ public final class PieChartAnimationHelper
         pieChart.draw();
 
         // Resize the chart.
-        new PieChartResizeAnimation(pieChart, pieChart.getChartWidth(), pieChart.getChartHeight(), tweener, duration, callback).run();
+        new PieChartCreateAnimation(pieChart, pieChart.getChartWidth(), pieChart.getChartHeight(), tweener, duration, callback).run();
 
         return pieChart;
     }
@@ -97,6 +100,11 @@ public final class PieChartAnimationHelper
                     create(pieChart, tweener, duration, callback);
                 }
             }).run();
+        }
+        else if (pieChart.getData() != null && data != null)
+        {
+            // Reload data as may have been updated.
+            new PieChartReloadAnimation(pieChart, data, pieChart.getChartWidth(), pieChart.getChartHeight(), tweener, duration, callback).run();
         }
         // TODO
         return pieChart;

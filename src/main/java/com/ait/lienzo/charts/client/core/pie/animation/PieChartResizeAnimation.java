@@ -24,6 +24,7 @@ import com.ait.lienzo.charts.client.core.pie.PieChartTooltip;
 import com.ait.lienzo.client.core.animation.AnimationTweener;
 import com.ait.lienzo.client.core.animation.IAnimationCallback;
 import com.ait.lienzo.client.core.shape.Text;
+import com.google.gwt.core.shared.GWT;
 
 public class PieChartResizeAnimation extends AbstractPieChartAnimation
 {
@@ -37,12 +38,14 @@ public class PieChartResizeAnimation extends AbstractPieChartAnimation
     @Override
     protected boolean apply(final StackedTweeningAnimation.NodeAnimation nodeAnimation, final double percent)
     {
+        GWT.log("PieChartResizeAnimation.apply percent: " + percent);
         boolean apply = super.apply(nodeAnimation, percent);
 
         final double w = getPieChart().getChartWidth();
 
         final double h = getPieChart().getChartHeight();
-
+        GWT.log("[w,h]" + "["+w+","+h+"]");
+        
         calculate(w, h);
 
         return apply;
@@ -57,12 +60,13 @@ public class PieChartResizeAnimation extends AbstractPieChartAnimation
     @Override
     protected void doAnimatePieSlice(PieChart.PieSlice slice, double radius, double startAngle, double endAngle)
     {
+        GWT.log("setShapeCircularAttributes slice color:" + slice.getColorKey() + "; radius: "+radius+"; startAngle: "+ startAngle+ "endAngle:"+endAngle);
         setShapeCircularAttributes(slice, radius, startAngle, endAngle);
     }
 
     @Override
-    protected void doAnimateText(Text text, double x, double y, double alpha)
+    protected void doAnimateText(Text text, double x, double y, double alpha, double scale)
     {
-        setShapeAttributes(text, x, y, alpha);
+        setShapeAttributes(text, x, y, alpha, scale);
     }
 }

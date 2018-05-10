@@ -40,6 +40,7 @@ import com.ait.lienzo.client.core.shape.Node;
 import com.ait.lienzo.client.core.shape.Text;
 import com.ait.lienzo.client.core.shape.json.validators.ValidationContext;
 import com.ait.lienzo.client.core.shape.json.validators.ValidationException;
+import com.ait.lienzo.client.core.shape.wires.AlignAndDistribute;
 import com.ait.lienzo.shared.core.types.ColorName;
 import com.ait.lienzo.shared.core.types.TextAlign;
 import com.ait.lienzo.shared.core.types.TextBaseLine;
@@ -57,7 +58,7 @@ public abstract class XYChart<T extends XYChart<T>> extends AbstractChart<T>
 {
     protected final List<Text>         categoriesAxisTitle = new LinkedList<Text>();
 
-    protected final List<Text>         valuesAxisTitle     = new LinkedList<Text>();         ;
+    protected final List<Text>         valuesAxisTitle     = new LinkedList<Text>();
 
     protected final List<Line>         valuesAxisIntervals = new LinkedList<Line>();        // The lines that represents the intervals in the Y axis.
 
@@ -121,7 +122,7 @@ public abstract class XYChart<T extends XYChart<T>> extends AbstractChart<T>
     public final T setData(final XYChartData data)
     {
         if (null != data)
-        {
+        {            
             getAttributes().put(ChartAttribute.XY_CHART_DATA.getProperty(), data.getJSO());
         }
         else
@@ -318,8 +319,16 @@ public abstract class XYChart<T extends XYChart<T>> extends AbstractChart<T>
             final TextAlign textAlign = isVertical ? TextAlign.RIGHT : TextAlign.CENTER;
             final double rotation = isVertical ? 270 : 0;
             Text valuesAxisTitle = new Text(getValuesAxis().getTitle(), getFontFamily(), getFontStyle(), getFontSize()).setFillColor(ColorName.SILVER).setX(x).setY(y).setTextAlign(textAlign).setTextBaseLine(TextBaseLine.MIDDLE).setRotationDegrees(rotation);
-            if (isVertical) leftArea.add(valuesAxisTitle);
-            else bottomArea.add(valuesAxisTitle);
+          
+            if (isVertical)
+            {
+                leftArea.add(valuesAxisTitle);
+            }
+            else 
+            {
+                bottomArea.add(valuesAxisTitle);
+            }
+            
             this.valuesAxisTitle.add(valuesAxisTitle);
         }
         // Categories axis intervals.
@@ -383,8 +392,8 @@ public abstract class XYChart<T extends XYChart<T>> extends AbstractChart<T>
             buildSeriesValues(_series, numSeries);
         }
         // Tooltip.
-        buildTooltip();
-
+        buildTooltip();    
+        
     }
 
     protected abstract AxisBuilder<?> buildCategoryAxisBuilder(final boolean isVertical);

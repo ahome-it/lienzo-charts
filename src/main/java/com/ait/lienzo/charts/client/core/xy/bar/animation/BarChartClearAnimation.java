@@ -46,7 +46,8 @@ public class BarChartClearAnimation extends XYChartClearAnimation
     }
 
     @Override
-    protected void clearValues(double chartWidth, double chartHeight) {
+    protected void clearValues(double chartWidth, double chartHeight) 
+    {
         final Map<String, List<Rectangle>> seriesValues = getBarChart().getSeriesValues();
         final double yClearPos = chartHeight;
         final double xClearPos = ChartDirection.POSITIVE.equals(getBarChart().getDirection()) ? 0 : chartWidth;
@@ -58,11 +59,16 @@ public class BarChartClearAnimation extends XYChartClearAnimation
             {
                 for (Rectangle rectangle : entry.getValue())
                 {
-                    if (isVertical()) add(rectangle, buildAnimationProperties(null, yClearPos, null, 0d));
-                    else add(rectangle, buildAnimationProperties(null, null, xClearPos, null));
+                    if (isVertical())
+                    {
+                        add(rectangle, buildAnimationProperties(null, yClearPos, null, 0d));
+                    }
+                    else
+                    {
+                        add(rectangle, buildAnimationProperties(null, null, xClearPos, null));
+                    }
                 }
             }
         }
     }
-
 }

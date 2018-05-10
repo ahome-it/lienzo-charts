@@ -47,6 +47,7 @@ import java.util.*;
 import static com.ait.lienzo.client.core.animation.AnimationProperties.toPropertyList;
 import static com.ait.lienzo.client.core.animation.AnimationProperty.Properties.ALPHA;
 import static com.ait.lienzo.client.core.animation.AnimationTweener.LINEAR;
+import static com.ait.lienzo.client.core.animation.AnimationTweener.EASE_OUT;
 
 /**
  * <p>XY chart implementation using rectangles as shapes for values.</p>
@@ -106,7 +107,7 @@ public class BarChart extends XYChart<BarChart>
 
         getMetaData().put("creator", "Roger Martinez");
     }
-
+    
     @Override
     public BarChart init()
     {
@@ -127,12 +128,12 @@ public class BarChart extends XYChart<BarChart>
 
     public BarChart reload(XYChartData data)
     {
-        return BarChartAnimationHelper.reload(this, data, LINEAR, getDefaultAnimationDuration());
+        return BarChartAnimationHelper.reload(this, data, EASE_OUT, getDefaultAnimationDuration());
     }
 
     public BarChart reload(XYChartData data, double duration)
     {
-        return BarChartAnimationHelper.reload(this, data, LINEAR, Math.max(duration, 1));
+        return BarChartAnimationHelper.reload(this, data, EASE_OUT, Math.max(duration, 1));
     }
 
     public BarChart reload(XYChartData data, AnimationTweener tweener, double duration)
@@ -262,7 +263,7 @@ public class BarChart extends XYChart<BarChart>
             }
         }
     }
-
+      
     public BarChart removeSeriesValues(final String seriesName)
     {
         if (seriesName != null)

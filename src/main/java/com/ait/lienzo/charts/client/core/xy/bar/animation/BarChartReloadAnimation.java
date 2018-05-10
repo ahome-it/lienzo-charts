@@ -57,7 +57,11 @@ public final class BarChartReloadAnimation extends AbstractBarChartAnimation
     protected void reloadBuilders(final XYChartData data, final double chartWidth, final double chartHeight)
     {
         Set<String> currentSeries = null;
-        if (!getBarChart().getSeriesValues().isEmpty()) currentSeries = getBarChart().getSeriesValues().keySet();
+        if (!getBarChart().getSeriesValues().isEmpty()) 
+        {
+            currentSeries = getBarChart().getSeriesValues().keySet();
+        }
+        
         getBarChart().getCategoriesAxisBuilder().reload(data, currentSeries, isVertical() ? chartWidth : chartHeight);
         getBarChart().getValuesAxisBuilder().reload(data, currentSeries, isVertical() ? chartHeight : chartWidth);
     }

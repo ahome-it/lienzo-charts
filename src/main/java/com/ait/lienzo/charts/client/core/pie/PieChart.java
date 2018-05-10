@@ -172,69 +172,101 @@ public class PieChart extends AbstractChart<PieChart>
         {
             final double value = values[i] / total;
 
-            final PieSlice slice = new PieSlice(0, 0, 0);
-
-            final int index = i;
-
-            slice.addNodeMouseClickHandler(new NodeMouseClickHandler()
-            {
-                @Override
-                public void onNodeMouseClick(NodeMouseClickEvent event)
-                {
-                    // GWT.log("PieChart - filtering on "  + categories[index] + "/" + index);
-                    PieChart.this.fireEvent(new ValueSelectedEvent(getData().getCategoriesProperty(), index));
-                }
-            });
-            final int _i = i;
-            final String category = categories[i];
-            final double tv = values[i];
-            slice.addNodeMouseEnterHandler(new NodeMouseEnterHandler()
-            {
-                @Override
-                public void onNodeMouseEnter(NodeMouseEnterEvent event)
-                {
-                    // Animate other slices.
-                    alphaToOtherSlices(slice.getID(), 0.7);
-
-                    // Show the tooltip.
-                    tooltip.setValues(category, getValue(tv));
-                    tooltip.show(getChartWidth() / 2, getChartHeight() / 2);
-                    Text _text = texts.get(_i);
-                    if (_text != null) _text.animate(LINEAR, toPropertyList(ALPHA(0)), getDefaultAnimationDuration());
-                }
-            });
-            slice.addNodeMouseExitHandler(new NodeMouseExitHandler()
-            {
-                @Override
-                public void onNodeMouseExit(NodeMouseExitEvent event)
-                {
-                    // Animate other slices.
-                    alphaToOtherSlices(slice.getID(), 1);
-
-                    // Hide tooltip.
-                    if (tooltip != null) tooltip.hide();
-
-                    // Show text.
-
-                    Text _text = texts.get(_i);
-                    if (_text != null) _text.animate(LINEAR, toPropertyList(ALPHA(1)), getDefaultAnimationDuration());
-                }
-            });
-            slice.setFillColor(getColor(i)).setStrokeColor(ColorName.BLACK).setStrokeWidth(1);
-            slice.setID("pieSlice" + i);
-            pieSlices.add(slice);
-            slices.add(slice);
-
-            Text text = new Text(getLabel(value * 100), getFontFamily(), getFontStyle(), getFontSize()).setFillColor(ColorName.BLACK).setTextBaseLine(TextBaseLine.MIDDLE).setAlpha(0);
-            texts.add(text);
-
-            labels.add(text);
+            addSlice(categories, values, i, value);
         }
         addOnAreaChartCentered(labels);
 
         addOnAreaChartCentered(slices);
     }
 
+    public void addSlice(int i, final double value)
+    {
+        final DataTable dataTable = getData().getDataTable();
+        final String[] categories = dataTable.getColumn(getData().getCategoriesProperty()).getStringValues();
+        final Double[] values = dataTable.getColumn(getData().getValuesProperty()).getNumericValues();
+        
+        addSlice(categories, values, i, value);
+        refreshTexts();
+    }
+    
+    private void addSlice(final String[] categories, final Double[] values, int i, final double value)
+    {
+        final PieSlice slice = new PieSlice(0, 0, 0);
+
+        final int index = i;
+
+        slice.addNodeMouseClickHandler(new NodeMouseClickHandler()
+        {
+            @Override
+            public void onNodeMouseClick(NodeMouseClickEvent event)
+            {
+                // GWT.log("PieChart - filtering on "  + categories[index] + "/" + index);
+                PieChart.this.fireEvent(new ValueSelectedEvent(getData().getCategoriesProperty(), index));
+            }
+        });
+        final int _i = i;
+        final String category = categories[i];
+        final double tv = values[i];
+        slice.addNodeMouseEnterHandler(new NodeMouseEnterHandler()
+        {
+            @Override
+            public void onNodeMouseEnter(NodeMouseEnterEvent event)
+            {
+                // Animate other slices.
+                alphaToOtherSlices(slice.getID(), 0.7);
+
+                // Show the tooltip.
+                tooltip.setValues(category, getValue(tv));
+                tooltip.show(getChartWidth() / 2, getChartHeight() / 2);
+                Text _text = texts.get(_i);
+                if (_text != null) _text.animate(LINEAR, toPropertyList(ALPHA(0)), getDefaultAnimationDuration());
+            }
+        });
+        slice.addNodeMouseExitHandler(new NodeMouseExitHandler()
+        {
+            @Override
+            public void onNodeMouseExit(NodeMouseExitEvent event)
+            {
+                // Animate other slices.
+                alphaToOtherSlices(slice.getID(), 1);
+
+                // Hide tooltip.
+                if (tooltip != null) tooltip.hide();
+
+                // Show text.
+
+                Text _text = texts.get(_i);
+                if (_text != null) _text.animate(LINEAR, toPropertyList(ALPHA(1)), getDefaultAnimationDuration());
+            }
+        });
+        slice.setFillColor(getColor(i)).setStrokeColor(ColorName.BLACK).setStrokeWidth(1);
+        slice.setID("pieSlice" + i);
+        pieSlices.add(slice);
+        slices.add(slice);
+
+        Text text = new Text(getLabel(value * 100), getFontFamily(), getFontStyle(), getFontSize()).setFillColor(ColorName.BLACK).setTextBaseLine(TextBaseLine.MIDDLE).setAlpha(0);
+        texts.add(text);
+
+        labels.add(text);
+    }
+
+    public void refreshTexts() 
+    {
+        double total = 0;
+
+        final Double[] values =  getData().getDataTable().getColumn(getData().getValuesProperty()).getNumericValues();
+        for (int i = 0; i < values.length; i++)
+        {
+            total += values[i];
+        }
+        for (int i = 0; i < values.length; i++)
+        {
+            final double value = values[i] / total;
+
+            String currentText = getTexts().get(i).getText();
+            getTexts().get(i).setText(getLabel(value*100));
+        }
+    }
     public Group getSlices()
     {
         return slices;
@@ -442,7 +474,7 @@ public class PieChart extends AbstractChart<PieChart>
             return Math.PI * (-0.5 + 2 * sofar);
         }
 
-        public static double buildEngAngle(double sofar, double value)
+        public static double buildEndAngle(double sofar, double value)
         {
             return Math.PI * (-0.5 + 2 * (sofar + value));
         }
