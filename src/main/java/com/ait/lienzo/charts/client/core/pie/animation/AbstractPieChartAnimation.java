@@ -34,12 +34,9 @@ import com.ait.lienzo.client.core.event.NodeMouseEnterHandler;
 import com.ait.lienzo.client.core.shape.Group;
 import com.ait.lienzo.client.core.shape.Shape;
 import com.ait.lienzo.client.core.shape.Text;
-import com.google.gwt.core.client.GWT;
 
 public abstract class AbstractPieChartAnimation extends AbstractChartAnimation
-{    
-   // public static final double Turn = Math.PI * 2.0;
-    
+{
     public AbstractPieChartAnimation(final PieChart pieChart, final double chartWidth, final double chartHeight, AnimationTweener tweener, final double duration, final IAnimationCallback callback)
     {
         super(pieChart, chartWidth, chartHeight, tweener, duration, callback);
@@ -50,15 +47,16 @@ public abstract class AbstractPieChartAnimation extends AbstractChartAnimation
         return (PieChart) getNode();
     }
 
+    @Override
     protected void calculate(final double w, final double h)
     {
         double percent = getPercent();
-        
-        if (percent > 1) 
+
+        if (percent > 1)
         {
-            percent = 1;            
+            percent = 1;
         }
-        
+
         double radius = getPieChart().getRadius(w, h);
 
         PieChartData data = getPieChart().getData();
@@ -72,9 +70,9 @@ public abstract class AbstractPieChartAnimation extends AbstractChartAnimation
         moveGroups(w, h);
 
         final DataTable dataTable = data.getDataTable();
-        //final String[] categories = dataTable.getColumn(data.getCategoriesProperty()).getStringValues();
+
         final Double[] values = dataTable.getColumn(data.getValuesProperty()).getNumericValues();
-                     
+
         double sofar = 0;
 
         double total = 0;
@@ -85,55 +83,49 @@ public abstract class AbstractPieChartAnimation extends AbstractChartAnimation
         }
         getPieChart().getLabels().setListening(false);
 
-        // total = 360
-        // value[i] = x
-        
         for (int i = 0; i < values.length; i++)
         {
-             
-            
-            if (i < getPieChart().getPieSlices().size()) 
+            if (i < getPieChart().getPieSlices().size())
             {
-                
-                final PieChart.PieSlice slice = getPieChart().getPieSlices().get(i); 
+                final PieChart.PieSlice slice = getPieChart().getPieSlices().get(i);
                 final double value = calculateCurrentValue(slice, values[i], total, percent);
-                
-                double startAngle = buildStartAngle(sofar, slice, value, total, percent); 
-                
+
+                double startAngle = buildStartAngle(sofar, slice, value, total, percent);
                 double endAngle = buildEndAngle(sofar, slice, value, total, percent);
-               // double endAngle = PieChart.PieSlice.buildEndAngle(sofar, value);
-                
-                doAnimatePieSlice(slice, radius, startAngle, endAngle);    
-                
-                calculateText(w, h, percent, radius, sofar, i, value, slice);               
+
+                doAnimatePieSlice(slice, radius, startAngle, endAngle);
+
+                calculateText(w, h, percent, radius, sofar, i, value, slice);
                 sofar += value;
-            }
-            else
-            {              
-                // TODO: New data values added. 
-            }
-            
-            
+            }           
         }
         getPieChart().getLabels().moveToTop();
     }
 
     protected double buildStartAngle(double sofar, PieSlice slice, Double value, double total, double percent)
     {
-        return PieChart.PieSlice.buildStartAngle(sofar); 
+        return PieChart.PieSlice.buildStartAngle(sofar);
     }
-    
-    protected double buildEndAngle(double sofar, PieSlice slice, Double value, double total, double percent) 
+
+    protected double buildEndAngle(double sofar, PieSlice slice, Double value, double total, double percent)
     {
-       return PieChart.PieSlice.buildEndAngle(sofar, value);       
+        return PieChart.PieSlice.buildEndAngle(sofar, value);
     }
 
     protected double calculateCurrentValue(final PieSlice slice, final double value, final double total, final double percent)
     {
-        return (value / total) * percent; 
+        return (value / total) * percent;
     }
-    
-    protected void calculateText(final double w, final double h, double percent, double radius, double sofar, int i,  final double value, PieChart.PieSlice slice)
+
+    protected void calculateText(
+            final double w, 
+            final double h, 
+            double percent, 
+            double radius,
+            double sofar,
+            int i, 
+            final double value,
+            PieChart.PieSlice slice)
     {
         double startAngle = Math.PI * (2.0 * sofar);
 
@@ -142,7 +134,16 @@ public abstract class AbstractPieChartAnimation extends AbstractChartAnimation
         calculateText(w, h, percent, radius, i, slice, startAngle, endAngle);
     }
 
-    protected void calculateText(final double w, final double h, double percent, double radius, int i, PieChart.PieSlice slice, double startAngle, double endAngle) {
+    protected void calculateText(
+            final double w, 
+            final double h,
+            double percent, 
+            double radius,
+            int i, 
+            PieChart.PieSlice slice,
+            double startAngle,
+            double endAngle)
+    {
         double middleAngle = (startAngle + endAngle) / 2.0;
 
         if (middleAngle > (Math.PI * 2.0))
@@ -159,7 +160,7 @@ public abstract class AbstractPieChartAnimation extends AbstractChartAnimation
 
         //TextAlign align;
 
-       if (middleAngle <= (Math.PI * 0.5))
+        if (middleAngle <= (Math.PI * 0.5))
         {
             lx += 2;
 
@@ -170,7 +171,7 @@ public abstract class AbstractPieChartAnimation extends AbstractChartAnimation
             lx += 2;
 
             //align = TextAlign.LEFT;
-         }
+        }
         else if ((middleAngle > Math.PI) && (middleAngle <= (Math.PI * 1.5)))
         {
             lx -= 2;
@@ -185,7 +186,7 @@ public abstract class AbstractPieChartAnimation extends AbstractChartAnimation
         }
         final double xToolTip = lx;
         final double yToolTip = ly;
-        
+
         if (slice != null)
         {
             slice.addNodeMouseEnterHandler(new NodeMouseEnterHandler()
@@ -198,27 +199,21 @@ public abstract class AbstractPieChartAnimation extends AbstractChartAnimation
                 }
             });
         }
-        
+
         if (i < getPieChart().getTexts().size())
         {
             Text text = getPieChart().getTexts().get(i);
-   
+
             if (text != null)
-            {                
+            {
                 final double textWidth = text.getBoundingBox().getWidth();
                 final double textHeight = text.getBoundingBox().getHeight();
-                
-                final double scale = percent; 
-                        
+
+                final double scale = percent;
+
                 doAnimateText(text, lx - textWidth / 2, ly - textHeight / 2, 1d, scale);
             }
-        }
-        else
-        {
-            com.google.gwt.core.shared.GWT.log("this shouldn't happen....");
-            
-            // TODO: New data values added.
-        }
+        }       
     }
 
     protected void moveGroups(double w, double h)
@@ -248,6 +243,7 @@ public abstract class AbstractPieChartAnimation extends AbstractChartAnimation
         return animationProperties;
     }
 
+    @Override
     protected void setShapeAttributes(final Shape<?> shape, final Double x, final Double y, final Double alpha)
     {
         if (shape != null)
@@ -256,12 +252,12 @@ public abstract class AbstractPieChartAnimation extends AbstractChartAnimation
             {
                 shape.setX(x);
             }
-            
+
             if (y != null)
             {
                 shape.setY(y);
             }
-            
+
             if (alpha != null)
             {
                 shape.setAlpha(alpha);
@@ -274,14 +270,15 @@ public abstract class AbstractPieChartAnimation extends AbstractChartAnimation
         if (shape != null)
         {
             setShapeAttributes(shape, x, y, alpha);
-            
+
             if (scale != null)
             {
-               shape.setScale(scale);
+                shape.setScale(scale);
             }
         }
     }
-    
+
+    @Override
     protected void setShapeCircularAttributes(final Shape<?> shape, final Double radius, final Double startAngle, final Double endAngle)
     {
         if (shape != null)
@@ -290,7 +287,7 @@ public abstract class AbstractPieChartAnimation extends AbstractChartAnimation
             {
                 shape.getAttributes().put(Attribute.RADIUS.getProperty(), radius);
             }
-            if (startAngle != null) 
+            if (startAngle != null)
             {
                 shape.getAttributes().put(Attribute.START_ANGLE.getProperty(), startAngle);
             }

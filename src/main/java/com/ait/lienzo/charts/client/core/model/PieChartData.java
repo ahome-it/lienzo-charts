@@ -45,10 +45,16 @@ public final class PieChartData
 
         DataTableColumn valuesCol = table.getColumn(valuesProperty);
 
-        if (categoriesCol == null || !categoriesCol.getType().equals(DataTableColumn.DataTableColumnType.STRING)) throw new RuntimeException("PieChart only support STRING data types for categories property");
-
-        if (valuesCol == null || !valuesCol.getType().equals(DataTableColumn.DataTableColumnType.NUMBER)) throw new RuntimeException("PieChart only support NUMERIC data types for values property");
-
+        if (categoriesCol == null || !categoriesCol.getType().equals(DataTableColumn.DataTableColumnType.STRING))
+        {
+            throw new RuntimeException("PieChart only support STRING data types for categories property");
+        }
+        
+        if (valuesCol == null || !valuesCol.getType().equals(DataTableColumn.DataTableColumnType.NUMBER))
+        {
+            throw new RuntimeException("PieChart only support NUMERIC data types for values property");
+        }
+        
         m_jso.setCategoriesProperty(categoriesProperty);
 
         m_jso.setValuesProperty(valuesProperty);

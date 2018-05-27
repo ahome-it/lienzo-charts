@@ -40,7 +40,7 @@ public abstract class AbstractChartAnimation extends StackedTweeningAnimation
         this.m_height = chartHeight;
 
         setNode(node);
-        
+
         init(node);
     }
 
@@ -48,8 +48,9 @@ public abstract class AbstractChartAnimation extends StackedTweeningAnimation
     {
         return (AbstractChart<?>) getNode();
     }
-    
-    protected void init(final AbstractChart<?> node) {
+
+    protected void init(final AbstractChart<?> node)
+    {
         // Initialize.        
     }
 
@@ -81,7 +82,8 @@ public abstract class AbstractChartAnimation extends StackedTweeningAnimation
     }
 
     @Override
-    public IAnimation doClose() {
+    public IAnimation doClose()
+    {
         final ChartResizer resizer = getChart().getChartResizer();
         if (resizer != null) resizer.moveToTop();
         return super.doClose();

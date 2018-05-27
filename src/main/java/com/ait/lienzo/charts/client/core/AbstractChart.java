@@ -125,7 +125,7 @@ public abstract class AbstractChart<T extends AbstractChart<T>> extends GroupOf<
 
         object.put("type", new JSONString(getGroupType().getValue()));
 
-        if (false == getMetaData().isEmpty())
+        if (!getMetaData().isEmpty())
         {
             object.put("meta", new JSONObject(getMetaData().getJSO()));
         }
@@ -193,6 +193,7 @@ public abstract class AbstractChart<T extends AbstractChart<T>> extends GroupOf<
 
     public abstract T init(AnimationTweener tweener, double duration);
 
+    @Override
     public T draw()
     {
         // Add the area node containers.

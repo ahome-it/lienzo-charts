@@ -312,6 +312,10 @@ public final class DataTable
         return null;
     }
 
+    /**
+     * Gets the size (rows) of this DataTable.
+     * @return The size (really?)
+     */
     public final int size()
     {
         if (this.m_jso.length() > 0)
@@ -319,5 +323,21 @@ public final class DataTable
             return getColumn(0).length();
         }
         return 0;
+    }    
+   
+    public final int getRowIndex(String rowLabel)
+    {
+        DataTableColumn dataColumn = getColumn(0);
+
+        for (int i = 0; i < dataColumn.length(); i++)
+        {
+            if (dataColumn.getStringValue(i).equals(rowLabel))
+            {
+                return i;
+            }
+        }
+
+        // TODO: custom exceptions
+        throw new IllegalArgumentException("Row with label '" + rowLabel + "' not found in the provided data.");
     }
 }

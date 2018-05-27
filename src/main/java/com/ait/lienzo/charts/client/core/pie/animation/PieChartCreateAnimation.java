@@ -22,15 +22,13 @@ public class PieChartCreateAnimation extends AbstractPieChartAnimation
 
     @Override
     protected boolean apply(final StackedTweeningAnimation.NodeAnimation nodeAnimation, final double percent)
-    {
-        GWT.log("PieChartCreateAnimation.apply percent: " + percent);
+    {     
         boolean apply = super.apply(nodeAnimation, percent);
 
         final double w = getPieChart().getChartWidth();
 
         final double h = getPieChart().getChartHeight();
-        GWT.log("[w,h]" + "["+w+","+h+"]");
-        
+             
         calculate(w, h);
 
         return apply;
@@ -44,8 +42,7 @@ public class PieChartCreateAnimation extends AbstractPieChartAnimation
 
     @Override
     protected void doAnimatePieSlice(PieChart.PieSlice slice, double radius, double startAngle, double endAngle)
-    {
-        GWT.log("setShapeCircularAttributes slice color:" + slice.getColorKey() + "; radius: "+radius+"; startAngle: "+ startAngle+ "endAngle:"+endAngle);
+    {       
         setShapeCircularAttributes(slice, radius, startAngle, endAngle);
     }
 
