@@ -45,6 +45,7 @@ import com.ait.lienzo.charts.client.core.pie.event.DataReloadedEventHandler;
 import com.ait.lienzo.charts.client.core.pie.event.ValueSelectedEvent;
 import com.ait.lienzo.charts.client.core.pie.event.ValueSelectedHandler;
 import com.ait.lienzo.charts.client.core.resizer.ChartResizeEvent;
+import com.ait.lienzo.charts.shared.core.types.palettes.PatternFlyPalette;
 import com.ait.lienzo.client.core.animation.AnimationTweener;
 import com.ait.lienzo.client.core.event.NodeMouseClickEvent;
 import com.ait.lienzo.client.core.event.NodeMouseClickHandler;
@@ -69,27 +70,37 @@ import com.google.gwt.json.client.JSONObject;
 
 public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
 {
-    private Group                    slices;
+    private Group           m_slices;
 
-    private Group                    labels;
+    private Group           m_labels;
 
-    private List<Text>               texts                = new LinkedList<Text>();
+    private List<Text>      m_texts        = new LinkedList<>();
 
-    private List<PieSlice>           pieSlices            = new LinkedList<PieSlice>();
+    private List<PieSlice>  m_pieSlices    = new LinkedList<>();
 
-    private PieChartTooltip          tooltip;
+    private PieChartTooltip m_tooltip;
 
-    private DataHandler              m_dataHandler;
-    private static final ColorName[] DEFAULT_SLICE_COLORS = new ColorName[] { ColorName.DEEPPINK, ColorName.YELLOW, ColorName.SALMON, ColorName.CORNFLOWERBLUE, ColorName.AQUA, ColorName.DEEPSKYBLUE, ColorName.GREENYELLOW, ColorName.BLUEVIOLET, ColorName.FUCHSIA, ColorName.MAGENTA, ColorName.MAROON };
+    private DataHandler     m_dataHandler;
+
+    private ColorPalette    m_colorPalette;
+
+    private boolean         m_showPieTexts = false;                                        // PatterFly default
+
+    protected void setColorPalette(ColorPalette palette)
+    {
+        m_colorPalette = palette;
+    }
 
     protected PieChart(JSONObject node, ValidationContext ctx) throws ValidationException
     {
         super(ChartNodeType.PIE_CHART, node, ctx);
+        m_colorPalette = new PatternFlyPalette();
     }
 
     public PieChart()
     {
         super(ChartNodeType.PIE_CHART);
+        m_colorPalette = new PatternFlyPalette();
     }
 
     @Override
@@ -144,9 +155,9 @@ public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
         {
             return;
         }
-        slices = new Group();
+        m_slices = new Group();
 
-        labels = new Group();
+        m_labels = new Group();
 
         _build(data);
 
@@ -160,14 +171,14 @@ public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
         super.moveAreas(x, y);
 
         // Center slices and texts.
-        if (slices != null)
+        if (m_slices != null)
         {
-            slices.setX(getChartWidth() / 2).setY(getChartHeight() / 2);        
+            m_slices.setX(getChartWidth() / 2).setY(getChartHeight() / 2);
         }
-        
-        if (labels != null)
+
+        if (m_labels != null)
         {
-            labels.setX(getChartWidth() / 2).setY(getChartHeight() / 2);
+            m_labels.setX(getChartWidth() / 2).setY(getChartHeight() / 2);
         }
     }
 
@@ -177,7 +188,7 @@ public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
         final String[] categories = dataTable.getColumn(getData().getCategoriesProperty()).getStringValues();
         final Double[] values = dataTable.getColumn(getData().getValuesProperty()).getNumericValues();
 
-        labels.setListening(false);
+        m_labels.setListening(false);
 
         //double sofar = 0;
 
@@ -193,9 +204,9 @@ public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
 
             addSlice(categories, values, i, value);
         }
-        addOnAreaChartCentered(labels);
+        addOnAreaChartCentered(m_labels);
 
-        addOnAreaChartCentered(slices);
+        addOnAreaChartCentered(m_slices);
     }
 
     public void addSlice(int i, final double value)
@@ -235,12 +246,16 @@ public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
                 alphaToOtherSlices(slice.getID(), 0.7);
 
                 // Show the tooltip.
-                tooltip.setValues(category, getValue(tv));
-                tooltip.show(getChartWidth() / 2, getChartHeight() / 2);
-                Text text = texts.get(_i);
-                if (text != null)
+                m_tooltip.setValues(category, getValue(tv));
+                m_tooltip.show(getChartWidth() / 2, getChartHeight() / 2);
+
+                if (m_showPieTexts)
                 {
-                    text.animate(LINEAR, toPropertyList(ALPHA(0)), getDefaultAnimationDuration());
+                    Text text = m_texts.get(_i);
+                    if (text != null)
+                    {
+                        text.animate(LINEAR, toPropertyList(ALPHA(0)), getDefaultAnimationDuration());
+                    }
                 }
             }
         });
@@ -253,38 +268,38 @@ public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
                 alphaToOtherSlices(slice.getID(), 1);
 
                 // Hide tooltip.
-                if (tooltip != null)
+                if (m_tooltip != null)
                 {
-                    tooltip.hide();
+                    m_tooltip.hide();
                 }
 
-                // Show text.
-                Text text = texts.get(_i);
-                if (text != null)
+                if (m_showPieTexts)
                 {
-                    text.animate(LINEAR, toPropertyList(ALPHA(1)), getDefaultAnimationDuration());
+                    Text text = m_texts.get(_i);
+                    if (text != null)
+                    {
+                        text.animate(LINEAR, toPropertyList(ALPHA(1)), getDefaultAnimationDuration());
+                    }
                 }
             }
         });
-        
-        slice.setFillColor(getColor(i)).setStrokeColor(ColorName.BLACK).setStrokeWidth(1);
+
+        slice.setFillColor(getColor(i)).setStrokeColor(m_colorPalette.getBordersColor()).setStrokeWidth(1);
+
         slice.setID("pieSlice" + i);
-        pieSlices.add(slice);
-        slices.add(slice);
+        m_pieSlices.add(slice);
+        m_slices.add(slice);
 
-        Text text = new Text(
-                getLabel(value * 100),
-                getFontFamily(),
-                getFontStyle(),
-                getFontSize());
-        
-        text.setFillColor(ColorName.BLACK)
-            .setTextBaseLine(TextBaseLine.MIDDLE)
-            .setAlpha(0);
-        
-        texts.add(text);
+        Text text = new Text(getLabel(value * 100), getFontFamily(), getFontStyle(), getFontSize());
 
-        labels.add(text);
+        text.setFillColor(ColorName.BLACK).setTextBaseLine(TextBaseLine.MIDDLE).setAlpha(0);
+
+        if (m_showPieTexts)
+        {
+            m_texts.add(text);
+        }
+
+        m_labels.add(text);
     }
 
     public void refreshTexts()
@@ -296,48 +311,54 @@ public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
         {
             total += values[i];
         }
-        for (int i = 0; i < values.length; i++)
-        {
-            final double value = values[i] / total;
 
-            String currentText = getTexts().get(i).getText();
-            getTexts().get(i).setText(getLabel(value * 100));
+        if (m_showPieTexts)
+        {
+            for (int i = 0; i < values.length; i++)
+            {
+                final double value = values[i] / total;
+
+                getTexts().get(i).setText(getLabel(value * 100));
+            }
         }
     }
 
     public Group getSlices()
     {
-        return slices;
+        return m_slices;
     }
 
     public Group getLabels()
     {
-        return labels;
+        return m_labels;
     }
 
     public List<Text> getTexts()
     {
-        return texts;
+        return m_texts;
     }
 
     public List<PieSlice> getPieSlices()
     {
-        return pieSlices;
+        return m_pieSlices;
     }
 
     public PieChartTooltip getTooltip()
     {
-        return tooltip;
+        return m_tooltip;
     }
 
     @Override
     public void clear()
     {
-        texts.clear();
-        labels.removeFromParent();
-        pieSlices.clear();
-        slices.removeFromParent();
-        if (tooltip != null) tooltip.removeFromParent();
+        m_texts.clear();
+        m_labels.removeFromParent();
+        m_pieSlices.clear();
+        m_slices.removeFromParent();
+        if (m_tooltip != null) 
+        {
+            m_tooltip.removeFromParent();        
+        }
         super.clear();
     }
 
@@ -358,7 +379,7 @@ public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
 
     protected void alphaToOtherSlices(String sliceID, double alpha)
     {
-        for (PieSlice slice : pieSlices)
+        for (PieSlice slice : m_pieSlices)
         {
             if (!slice.getID().equals(sliceID))
             {
@@ -406,9 +427,9 @@ public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
 
     private void buildTooltip()
     {
-        tooltip = new PieChartTooltip();
+        m_tooltip = new PieChartTooltip();
 
-        addOnAreaChartCentered(tooltip);
+        addOnAreaChartCentered(m_tooltip);
     }
 
     protected void addOnAreaChartCentered(Group group)
@@ -419,16 +440,9 @@ public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
         group.setAlpha(1d);
     }
 
-    // TODO: Use color strategy.
     protected IColor getColor(int position)
     {
-        int defaultColorsSize = DEFAULT_SLICE_COLORS.length;
-
-        if (position < defaultColorsSize)
-        {
-            return DEFAULT_SLICE_COLORS[position];
-        }
-        return new Color(position * 20, 128, 0);
+        return m_colorPalette.getColor(position);
     }
 
     public final PieChart setData(PieChartData data)
@@ -526,21 +540,21 @@ public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
     }
 
     @Override
-    public IBuildedChart withColorPallete(ColorPalette pallete)
+    public IBuildedChart withColorPalette(ColorPalette palette)
     {
-        // TODO Auto-generated method stub
-        return null;
+        setColorPalette(palette);
+        return this;
     }
 
     @Override
     public IChartDataHandler getDataHandler()
     {
-       if (m_dataHandler == null)
-       {
-           m_dataHandler = new DataHandler(getData().getDataTable(), this);
-       }
-       
-       return m_dataHandler;
+        if (m_dataHandler == null)
+        {
+            m_dataHandler = new DataHandler(getData().getDataTable(), this);
+        }
+
+        return m_dataHandler;
     }
 
     class DataHandler implements IChartDataHandler
@@ -550,7 +564,7 @@ public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
         private final NFastArrayList<DataAction> m_pendingActions;
 
         private final PieChart                   m_pieChart;
-        
+
         public DataHandler(DataTable dataTable, PieChart pieChart)
         {
             m_pendingActions = new NFastArrayList<>();
@@ -572,10 +586,7 @@ public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
                 m_pendingActions.add(action);
             }
 
-            return new ChartDataBuilder(
-                    m_pendingActions,
-                    m_pieChart, 
-                    m_pieChart.getDefaultAnimationDuration());
+            return new ChartDataBuilder(m_pendingActions, m_pieChart, m_pieChart.getDefaultAnimationDuration());
         }
 
         @Override
@@ -585,24 +596,21 @@ public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
             {
                 dataAction.apply(m_dataTable);
             }
-            
-            m_pendingActions.clear();            
+
+            m_pendingActions.clear();
         }
     }
 
     final class ChartDataBuilder implements IChartDataBuilder
     {
         private final NFastArrayList<DataAction> m_pendingActions;
-        
+
         private final PieChart                   m_pieChart;
 
         private final double                     m_animationDuration;
-        
-        ChartDataBuilder(
-                NFastArrayList<DataAction> pendingActions,
-                PieChart pieChart,
-                double duration)
-        {            
+
+        ChartDataBuilder(NFastArrayList<DataAction> pendingActions, PieChart pieChart, double duration)
+        {
             m_pendingActions = pendingActions;
             m_pieChart = pieChart;
             m_animationDuration = duration;
@@ -610,7 +618,7 @@ public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
 
         @Override
         public IChartDataBuilderAggregator with(Double value, String header)
-        {   
+        {
             // Now the "with" should get adds 'value' at column 'header' in the same row
             // returned after the previous action was executed.   
             AddDataAction<Double> action = new AddDataAction<>(header, value);
@@ -630,23 +638,17 @@ public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
             AddDataAction<Date> action = new AddDataAction<>(header, value);
             return addAndCreateAnimation(action);
         }
-        
+
         private IChartDataBuilderAggregator addAndCreateAnimation(DataAction action)
         {
             action.setAnimation(buildAddAnimation());
-            m_pendingActions.add(action);      
+            m_pendingActions.add(action);
             return new ChartDataBuilderAggregator(m_pendingActions);
         }
-        
+
         private AddDataAnimation buildAddAnimation()
         {
-            return new AddDataAnimation(
-                    m_pieChart,
-                    m_pieChart.getChartWidth(), 
-                    m_pieChart.getChartHeight(), 
-                    AnimationTweener.EASE_IN,
-                    m_animationDuration,
-                    null);                    
+            return new AddDataAnimation(m_pieChart, m_pieChart.getChartWidth(), m_pieChart.getChartHeight(), AnimationTweener.EASE_IN, m_animationDuration, null);
         }
     }
 
@@ -663,7 +665,7 @@ public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
         public IChartDataBuilderAggregator and(Double value, String header)
         {
             AddDataAction<Double> action = new AddDataAction<>(header, value);
-            m_pendingActions.add(action);      
+            m_pendingActions.add(action);
             return this;
         }
 
@@ -671,7 +673,8 @@ public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
         public IChartDataBuilderAggregator and(String value, String header)
         {
             AddDataAction<String> action = new AddDataAction<>(header, value);
-            m_pendingActions.add(action);;        
+            m_pendingActions.add(action);
+            ;
             return this;
         }
 
@@ -679,7 +682,7 @@ public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
         public IChartDataBuilderAggregator and(Date value, String header)
         {
             AddDataAction<Date> action = new AddDataAction<>(header, value);
-            m_pendingActions.add(action);      
+            m_pendingActions.add(action);
             return this;
         }
     }
@@ -688,6 +691,6 @@ public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
     public void applyDataChanges()
     {
         getDataHandler().applyChanges();
-        
+
     }
 }

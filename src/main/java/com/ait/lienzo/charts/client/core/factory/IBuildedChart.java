@@ -6,7 +6,7 @@ import com.ait.lienzo.charts.client.core.ColorPalette;
 public interface IBuildedChart
 {
     IBuildedChart using(ChartData data);
-    IBuildedChart withColorPallete(ColorPalette pallete);
+    IBuildedChart withColorPalette(ColorPalette pallete);
     IChartDataHandler getDataHandler();
     void applyDataChanges();
 }
