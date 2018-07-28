@@ -28,6 +28,18 @@ public class PatternFlyPalette extends ColorPalette
     }
 
     @Override
+    public IColor getTooltipBackgroundColor()
+    {
+        return TooltipBackground;
+    }
+
+    @Override
+    public IColor getTooltipTextColor()
+    {
+        return ColorName.WHITE;
+    }
+    
+    @Override
     public IColor getColor(int colorIndex)
     {
         int[] currentIndexes = new int[m_colors.size()];
@@ -74,6 +86,8 @@ public class PatternFlyPalette extends ColorPalette
         return ColorName.WHITE;
     }
 
+    private static final Color TooltipBackground = new Color(77, 82, 88, 0.9);
+    
     private static final Color   Black100      = new Color(250, 250, 250);                                                                                                                                                                                                                                                               // pf-black-100 #fafafa
 
     private static final Color   Black150      = new Color(245, 245, 245);                                                                                                                                                                                                                                                               // pf-black-150 #f5f5f5

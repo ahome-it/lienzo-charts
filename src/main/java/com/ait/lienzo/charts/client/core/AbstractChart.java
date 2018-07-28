@@ -277,13 +277,13 @@ public abstract class AbstractChart<T extends AbstractChart<T>> extends GroupOf<
         //LegendAlign legendAlign = getLegendAlignment();
         if (!LegendPosition.NONE.equals(legendPosition))
         {
-            legend = new ChartLegend();
+            legend = new ChartLegend();            
             Double[] legendPositions = getLegendPositions(getChartWidth(), getChartHeight());
             double xLegend = legendPositions[0];
             double yLegend = legendPositions[1];
             switch (legendPosition)
             {
-                case TOP:
+                case TOP:                    
                     topArea.add(legend.setX(xLegend).setY(yLegend));
                     break;
                 case LEFT:
@@ -312,7 +312,7 @@ public abstract class AbstractChart<T extends AbstractChart<T>> extends GroupOf<
         //LegendAlign legendAlign = getLegendAlignment();
         if (!LegendPosition.NONE.equals(legendPosition))
         {
-            legend = new ChartLegend();
+           // legend = new ChartLegend();
             double xLegend = 0;
             double yLegend = 0;
             // TODO: legendAlign
@@ -334,8 +334,11 @@ public abstract class AbstractChart<T extends AbstractChart<T>> extends GroupOf<
                     xLegend = w / 2;
                     yLegend = 2;
                     break;
-                default:
-                    xLegend = w / 2;
+                    
+                default:                    
+                    double legendWidth = legend.getBoundingBox().getWidth();
+                    double middle = getWidth() / 2;
+                    xLegend = middle - (legendWidth/2);
                     yLegend = 5;
                     break;
             }

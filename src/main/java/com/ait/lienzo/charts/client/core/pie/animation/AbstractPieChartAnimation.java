@@ -34,6 +34,7 @@ import com.ait.lienzo.client.core.event.NodeMouseEnterHandler;
 import com.ait.lienzo.client.core.shape.Group;
 import com.ait.lienzo.client.core.shape.Shape;
 import com.ait.lienzo.client.core.shape.Text;
+import com.google.gwt.core.shared.GWT;
 
 public abstract class AbstractPieChartAnimation extends AbstractChartAnimation
 {
@@ -187,18 +188,19 @@ public abstract class AbstractPieChartAnimation extends AbstractChartAnimation
         final double xToolTip = lx;
         final double yToolTip = ly;
 
-        if (slice != null)
+      /*  if (slice != null)
         {
             slice.addNodeMouseEnterHandler(new NodeMouseEnterHandler()
             {
                 @Override
                 public void onNodeMouseEnter(NodeMouseEnterEvent event)
                 {
+                    
                     // Position the tooltip.
-                    doAnimateToolTip(getPieChart().getTooltip(), xToolTip + w / 2, yToolTip + h / 2);
+                    doAnimateToolTip(getPieChart().getTooltip(), event.getX(), event.getY());
                 }
             });
-        }
+        }*/
 
         if (i < getPieChart().getTexts().size())
         {

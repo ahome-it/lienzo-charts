@@ -44,7 +44,7 @@ public class ChartLegend extends Group
 
     private static final String FONT_STYLE               = "";
 
-    private static final int    FONT_SIZE                = 6;
+    private static final int    FONT_SIZE                = 12;
 
     public enum ChartLegendOrientation
     {
@@ -90,12 +90,12 @@ public class ChartLegend extends Group
 
     public ChartLegend()
     {
-        entries = new LinkedList<ChartLegendEntry>();
+        entries = new LinkedList<>();
     }
 
     public ChartLegend(ChartLegendEntry[] _series)
     {
-        entries = new LinkedList<ChartLegendEntry>();
+        entries = new LinkedList<>();
         
         if (_series != null)
         {
@@ -169,8 +169,17 @@ public class ChartLegend extends Group
             final ChartLegendEntry serie = entries.get(x);
             final double legendX = 0;
             final double legendY = 30 + (LEGEND_HEIGHT_SEPARATION * x) + (LEGEND_RECTANGLE_HEIGHT * x);
-            final Rectangle rectangle = new Rectangle(LEGEND_RECTANGLE_WIDTH, LEGEND_RECTANGLE_HEIGHT).setX(legendX).setY(legendY).setFillColor(serie.getColor());
-            final Text text = new Text(serie.getName(), FONT_FAMILY, FONT_STYLE, FONT_SIZE).setFillColor(ColorName.BLACK).setX(legendX + LEGEND_RECTANGLE_WIDTH + 10).setY(legendY + (LEGEND_HEIGHT_SEPARATION / 2)).setTextBaseLine(TextBaseLine.MIDDLE);
+            final Rectangle rectangle = new Rectangle(LEGEND_RECTANGLE_WIDTH, LEGEND_RECTANGLE_HEIGHT)
+                    .setX(legendX)
+                    .setY(legendY)
+                    .setFillColor(serie.getColor());
+            
+            final Text text = new Text(serie.getName(), FONT_FAMILY, FONT_STYLE, FONT_SIZE)
+                    .setFillColor(ColorName.BLACK)
+                    .setX(legendX + LEGEND_RECTANGLE_WIDTH + 10)
+                    .setY(legendY + (LEGEND_HEIGHT_SEPARATION / 2))
+                    .setTextBaseLine(TextBaseLine.MIDDLE);
+            
             add(rectangle);
             add(text);
         }
@@ -186,6 +195,7 @@ public class ChartLegend extends Group
         // Build legend entries.
         final int size = entries.size();
         int column = 1;
+        m_width = 0;
         for (int x = 0; x < size; x++)
         {
             final ChartLegendEntry serie = entries.get(x);
@@ -193,11 +203,27 @@ public class ChartLegend extends Group
             final double lastEntryWidth = getLegendEntryWidth(lastText);
             final double legendX = lastEntryX + lastEntryWidth;
             final double legendY = LEGEND_RECTANGLE_HEIGHT * column;
-            final Rectangle rectangle = new Rectangle(LEGEND_RECTANGLE_WIDTH, LEGEND_RECTANGLE_HEIGHT).setX(legendX).setY(legendY).setFillColor(serie.getColor());
-            final Text text = new Text(serie.getName(), FONT_FAMILY, FONT_STYLE, FONT_SIZE).setFillColor(ColorName.BLACK).setX(legendX + LEGEND_RECTANGLE_WIDTH).setY(legendY + LEGEND_RECTANGLE_HEIGHT / 2).setTextBaseLine(TextBaseLine.MIDDLE);
+            final Rectangle rectangle = new Rectangle(LEGEND_RECTANGLE_WIDTH, LEGEND_RECTANGLE_HEIGHT)
+                    .setX(legendX)
+                    .setY(legendY)
+                    .setFillColor(serie.getColor());
+            
+            final Text text = new Text(serie.getName(), FONT_FAMILY, FONT_STYLE, FONT_SIZE)
+                    .setFillColor(ColorName.BLACK)
+                    .setX(legendX + LEGEND_RECTANGLE_WIDTH +10)
+                    .setY(legendY + LEGEND_RECTANGLE_HEIGHT / 2)
+                    .setTextBaseLine(TextBaseLine.MIDDLE);                      
+            
+            m_width += getLegendEntryWidth(text);
+            
             add(rectangle);
             add(text);
-            if (x == 0) firstText = text;
+            
+            if (x == 0)
+            {
+                firstText = text;
+            }
+            
             if (x + 1 < (MAX_ENTRIES_ROW * column))
             {
                 lastText = text;
@@ -208,7 +234,11 @@ public class ChartLegend extends Group
                 lastText = null;
                 column++;
             }
-            if (lastTextOnSameRow == null) lastTextOnSameRow = lastText;
+            
+            if (lastTextOnSameRow == null)
+            {
+                lastTextOnSameRow = lastText;
+            }
         }
         // Center the legend area.
         if (lastTextOnSameRow != null)
@@ -219,12 +249,24 @@ public class ChartLegend extends Group
             final double w = firstX - lastEntryX + lastEntryWidth;
             setX(w > 0 ? getX() - w : getX() + w);
         }
+        
         return this;
+    }
+    
+    private double m_width;
+    
+    public double getWidth()
+    {
+        return m_width;
     }
 
     protected double getLegendEntryWidth(Text entry)
     {
-        if (entry != null) return entry.getBoundingBox().getWidth() + LEGEND_RECTANGLE_WIDTH + LEGEND_WIDTH_SEPARATION;
+        if (entry != null)
+        {
+            return entry.getBoundingBox().getWidth() + LEGEND_RECTANGLE_WIDTH + LEGEND_WIDTH_SEPARATION;
+        }
+        
         return 0;
     }
 

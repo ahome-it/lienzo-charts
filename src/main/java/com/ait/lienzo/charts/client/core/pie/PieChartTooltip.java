@@ -18,6 +18,7 @@
 
 package com.ait.lienzo.charts.client.core.pie;
 
+import com.ait.lienzo.charts.shared.core.types.palettes.PatternFlyPalette;
 import com.ait.lienzo.client.core.shape.Group;
 import com.ait.lienzo.client.core.shape.Rectangle;
 import com.ait.lienzo.client.core.shape.Text;
@@ -32,14 +33,12 @@ import com.ait.lienzo.shared.core.types.TextBaseLine;
 
 public class PieChartTooltip extends Group
 {
-    public static final double  TRIANGLE_SIZE          = 10;
+    private final IColor m_tooltipColor;
 
-    private static final double TOOLTIP_PADDING_WIDTH  = 25;
-
-    private static final double TOOLTIP_PADDING_HEIGHT = 25;
-
-    private static final IColor TOOLTIP_COLOR          = ColorName.WHITESMOKE;
-
+    private final IColor m_fontColor;
+    
+    private IColor m_dataColor;
+    
     private static final String FONT_FAMILY            = "Verdana";
 
     private static final String CATEGORIES_FONT_STYLE  = "";
@@ -48,73 +47,94 @@ public class PieChartTooltip extends Group
 
     private static final int    FONT_SIZE              = 10;
 
-    private static final IColor LABEL_COLOR            = ColorName.BLACK;
+    private Rectangle m_dataRectangle;
+    
+    private Rectangle           m_rectangle;
 
-    private Rectangle           rectangle;
+    private Text                m_categoriesTextObject;
 
-    private Triangle            triangle;
+    private Text                m_valuesTextObject;
+    
+    private Text                m_valuesPercentageTextObject;
 
-    private Triangle            tmasking;
+    private String              m_categoriesText;
 
-    private Text                categoriesText;
+    private String              m_valuesText;
 
-    private Text                valuesText;
-
-    private String              _categoriesText;
-
-    private String              _valuesText;
-
-    private static final Shadow SHADOW                 = new Shadow(ColorName.BLACK.getColor().setA(0.80), 10, 3, 3);
+    private String              m_valuesPercentageText;
+    
+    private static final int MARGINS = 10;
+ 
 
     public PieChartTooltip()
     {
+        PatternFlyPalette palette = new PatternFlyPalette();
+        m_tooltipColor = palette.getTooltipBackgroundColor();
+        m_fontColor = palette.getTooltipTextColor(); 
         build();
     }
 
     protected PieChartTooltip build()
     {
-        rectangle = new Rectangle(1, 1).setFillColor(TOOLTIP_COLOR).setCornerRadius(5).setStrokeWidth(1).setShadow(SHADOW);
-        triangle = new Triangle(new Point2D(1, 1), new Point2D(1, 1), new Point2D(1, 1)).setFillColor(TOOLTIP_COLOR).setStrokeWidth(1).setShadow(SHADOW);
-        tmasking = new Triangle(new Point2D(1, 1), new Point2D(1, 1), new Point2D(1, 1)).setFillColor(TOOLTIP_COLOR);
-        categoriesText = new Text("", FONT_FAMILY, CATEGORIES_FONT_STYLE, FONT_SIZE).setFillColor(LABEL_COLOR).setTextAlign(TextAlign.LEFT).setTextBaseLine(TextBaseLine.MIDDLE);
-        valuesText = new Text("", FONT_FAMILY, VALUES_FONT_STYLE, FONT_SIZE).setFillColor(LABEL_COLOR).setTextAlign(TextAlign.LEFT).setTextBaseLine(TextBaseLine.MIDDLE);
-        add(rectangle);
-        add(triangle);
-        add(tmasking);
-        add(categoriesText);
-        add(valuesText);
-        categoriesText.moveToTop();
-        valuesText.moveToTop();
+        m_dataRectangle = new Rectangle(10,10);
+        m_rectangle = new Rectangle(1, 1).setFillColor(m_tooltipColor);
+            
+        m_valuesPercentageTextObject = createStandardTextObject();        
+        m_categoriesTextObject = createStandardTextObject();        
+        m_valuesTextObject = createStandardTextObject();  
+        
+        add(m_rectangle);
+        add(m_dataRectangle);
+        add(m_valuesTextObject);
+        add(m_categoriesTextObject);        
+        add(m_valuesPercentageTextObject);
+                
+        m_valuesTextObject.moveToTop();
+        m_categoriesTextObject.moveToTop();        
+        m_valuesPercentageTextObject.moveToTop();
+        
         setVisible(false);
         setListening(false);
         return this;
     }
+    
+    private Text createStandardTextObject()
+    {
+        return new Text("", FONT_FAMILY, VALUES_FONT_STYLE, FONT_SIZE)
+                .setFillColor(m_fontColor)
+                .setTextAlign(TextAlign.LEFT)
+                .setTextBaseLine(TextBaseLine.MIDDLE);
+    }
 
     public PieChartTooltip show(final double x, final double y)
     {
-        this.categoriesText.setText(_categoriesText);
-        BoundingBox bb = categoriesText.getBoundingBox();
-        final double ctw = bb.getWidth();
-        final double cth = bb.getHeight();
-        this.valuesText.setText(_valuesText);
-        bb = valuesText.getBoundingBox();
-        final double vtw = bb.getWidth();
-        final double vth = bb.getHeight();
-        final double rw = (ctw > vtw ? ctw : vtw) + TOOLTIP_PADDING_WIDTH;
-        final double rh = (cth + vth) + TOOLTIP_PADDING_HEIGHT;
-        rectangle.setWidth(rw).setHeight(rh).setCornerRadius(5);
-        final double rx = rectangle.getX();
-        final double ry = rectangle.getY();
-        triangle.setPoints(new Point2D(rx + rw / 2 - TRIANGLE_SIZE, ry + rh), new Point2D(rx + rw / 2, rh + TRIANGLE_SIZE), new Point2D(rx + rw / 2 + TRIANGLE_SIZE, ry + rh));
-        tmasking.setPoints(new Point2D(rx + rw / 2 - TRIANGLE_SIZE - 3, ry + rh - 3), new Point2D(rx + rw / 2, rh + TRIANGLE_SIZE - 3), new Point2D(rx + rw / 2 + TRIANGLE_SIZE + 3, ry + rh - 3));
-        final double vtx = rw / 2 - vtw / 2;
-        final double ctx = rw / 2 - ctw / 2;
-        final double vty = rh / 2 - vth / 2;
-        final double cty = vty + cth + 1;
-        this.categoriesText.setX(ctx).setY(cty);
-        this.valuesText.setX(vtx).setY(vty);
-        setX(x - rw / 2);
-        setY(y - rh);
+        double tooltipHeight = (MARGINS*2) + 10;
+        m_dataRectangle.setFillColor(m_dataColor);
+        m_dataRectangle.setX(MARGINS).setY(MARGINS);        
+        
+        m_valuesTextObject.setText(m_valuesText);
+        BoundingBox bb = m_valuesTextObject.getBoundingBox();
+        final double valuesWidth = bb.getWidth();
+        m_valuesTextObject.setX(m_dataRectangle.getX() + m_dataRectangle.getWidth() + 5);    
+        m_valuesTextObject.setY(14);
+                
+        m_categoriesTextObject.setText(m_categoriesText);
+        bb = m_categoriesTextObject.getBoundingBox();
+        final double categoriesWidth = bb.getWidth();                
+        m_categoriesTextObject.setX(MARGINS + m_dataRectangle.getWidth() + 10 + valuesWidth);                
+        m_categoriesTextObject.setY(14);
+        
+        m_valuesPercentageTextObject.setText(m_valuesPercentageText);
+        bb = m_valuesPercentageTextObject.getBoundingBox();        
+        final double valuesPercentageWidth = bb.getWidth();
+        m_valuesPercentageTextObject.setX(categoriesWidth + m_categoriesTextObject.getX() + 40);                
+        m_valuesPercentageTextObject.setY(14);
+        
+        m_rectangle.setWidth((MARGINS*2) + categoriesWidth + valuesWidth + valuesPercentageWidth + m_dataRectangle.getWidth() + 5 + 5 + 40);
+        m_rectangle.setHeight(tooltipHeight);
+        
+        setX(x);
+        setY(y);
         moveToTop();
         setVisible(true);
         getLayer().batch();
@@ -130,11 +150,16 @@ public class PieChartTooltip extends Group
         return this;
     }
 
-    public PieChartTooltip setValues(String categoriesText, String valuesText)
+    public PieChartTooltip setValues(
+            String categoriesText,
+            String valuesText,
+            IColor color,
+            String valuesPercentageText)
     {
-        this._categoriesText = categoriesText;
-
-        this._valuesText = valuesText;
+        m_dataColor = color;
+        m_categoriesText = categoriesText;
+        m_valuesText = valuesText;
+        m_valuesPercentageText = valuesPercentageText;
 
         return this;
     }

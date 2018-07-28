@@ -53,6 +53,8 @@ import com.ait.lienzo.client.core.event.NodeMouseEnterEvent;
 import com.ait.lienzo.client.core.event.NodeMouseEnterHandler;
 import com.ait.lienzo.client.core.event.NodeMouseExitEvent;
 import com.ait.lienzo.client.core.event.NodeMouseExitHandler;
+import com.ait.lienzo.client.core.event.NodeMouseMoveEvent;
+import com.ait.lienzo.client.core.event.NodeMouseMoveHandler;
 import com.ait.lienzo.client.core.shape.Group;
 import com.ait.lienzo.client.core.shape.IContainer;
 import com.ait.lienzo.client.core.shape.Node;
@@ -60,47 +62,64 @@ import com.ait.lienzo.client.core.shape.Slice;
 import com.ait.lienzo.client.core.shape.Text;
 import com.ait.lienzo.client.core.shape.json.validators.ValidationContext;
 import com.ait.lienzo.client.core.shape.json.validators.ValidationException;
+import com.ait.lienzo.client.core.types.BoundingBox;
 import com.ait.lienzo.shared.core.types.Color;
 import com.ait.lienzo.shared.core.types.ColorName;
 import com.ait.lienzo.shared.core.types.IColor;
 import com.ait.lienzo.shared.core.types.TextBaseLine;
 import com.ait.tooling.nativetools.client.collection.NFastArrayList;
+import com.google.gwt.core.shared.GWT;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.json.client.JSONObject;
 
 public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
 {
-    private Group           m_slices;
+    private Group                  m_slices;
 
-    private Group           m_labels;
+    private Group                  m_labels;
 
-    private List<Text>      m_texts        = new LinkedList<>();
+    private List<Text>             m_texts        = new LinkedList<>();
 
-    private List<PieSlice>  m_pieSlices    = new LinkedList<>();
+    private List<PieSlice>         m_pieSlices    = new LinkedList<>();
 
-    private PieChartTooltip m_tooltip;
+    private PieChartTooltip        m_tooltip;
 
-    private DataHandler     m_dataHandler;
+    private DataHandler            m_dataHandler;
 
-    private ColorPalette    m_colorPalette;
+    private ColorPalette           m_colorPalette;
 
-    private boolean         m_showPieTexts = false;                                        // PatterFly default
+    private boolean                m_showPieTexts = false;
 
-    protected void setColorPalette(ColorPalette palette)
-    {
-        m_colorPalette = palette;
-    }
+    private NFastArrayList<Double> m_percents     = new NFastArrayList<>();
 
     protected PieChart(JSONObject node, ValidationContext ctx) throws ValidationException
     {
         super(ChartNodeType.PIE_CHART, node, ctx);
-        m_colorPalette = new PatternFlyPalette();
+        loadDefaultProperties();
     }
 
     public PieChart()
     {
         super(ChartNodeType.PIE_CHART);
+        loadDefaultProperties();
+    }
+
+    private void loadDefaultProperties()
+    {
+        addNodeMouseMoveHandler(new NodeMouseMoveHandler()
+        {
+            @Override
+            public void onNodeMouseMove(NodeMouseMoveEvent event)
+            {
+                if (m_tooltip != null && m_tooltip.isVisible())
+                {
+                    m_tooltip.show(event.getX() - 90, event.getY() - 90);
+                }
+            }
+        });
+
         m_colorPalette = new PatternFlyPalette();
+        setAlpha(1);
     }
 
     @Override
@@ -158,7 +177,7 @@ public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
         m_slices = new Group();
 
         m_labels = new Group();
-
+        
         _build(data);
 
         // Tooltip.
@@ -178,7 +197,9 @@ public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
 
         if (m_labels != null)
         {
-            m_labels.setX(getChartWidth() / 2).setY(getChartHeight() / 2);
+            BoundingBox bb = m_labels.getBoundingBox();
+            bb.getWidth();
+          //  m_labels.setX(0).setY(getChartHeight() / 2);
         }
     }
 
@@ -204,7 +225,10 @@ public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
 
             addSlice(categories, values, i, value);
         }
-        addOnAreaChartCentered(m_labels);
+        
+       // chartArea.add(m_labels);
+        
+      //  addOnAreaChartCentered(m_labels);
 
         addOnAreaChartCentered(m_slices);
     }
@@ -224,6 +248,8 @@ public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
         final PieSlice slice = new PieSlice(0, 0, 0);
 
         final int index = i;
+
+        m_percents.set(i, value * 100);
 
         slice.addNodeMouseClickHandler(new NodeMouseClickHandler()
         {
@@ -245,9 +271,9 @@ public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
                 // Animate other slices.
                 alphaToOtherSlices(slice.getID(), 0.7);
 
-                // Show the tooltip.
-                m_tooltip.setValues(category, getValue(tv));
-                m_tooltip.show(getChartWidth() / 2, getChartHeight() / 2);
+                m_tooltip.setValues(category, getValue(tv), Color.fromColorString(slice.getFillColor()), getValue(m_percents.get(_i)) + "%");
+
+                m_tooltip.show(event.getX() - 90, event.getY() - 90);
 
                 if (m_showPieTexts)
                 {
@@ -259,6 +285,7 @@ public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
                 }
             }
         });
+
         slice.addNodeMouseExitHandler(new NodeMouseExitHandler()
         {
             @Override
@@ -290,16 +317,19 @@ public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
         m_pieSlices.add(slice);
         m_slices.add(slice);
 
+        if (m_showPieTexts)
+        {
+            Text text = new Text(getLabel(value * 100), getFontFamily(), getFontStyle(), getFontSize());
+            text.setFillColor(ColorName.BLACK).setTextBaseLine(TextBaseLine.MIDDLE).setAlpha(0);
+            m_texts.add(text);
+        }
+
+        // ?????????
         Text text = new Text(getLabel(value * 100), getFontFamily(), getFontStyle(), getFontSize());
 
         text.setFillColor(ColorName.BLACK).setTextBaseLine(TextBaseLine.MIDDLE).setAlpha(0);
 
-        if (m_showPieTexts)
-        {
-            m_texts.add(text);
-        }
-
-        m_labels.add(text);
+        m_labels.add(text);        
     }
 
     public void refreshTexts()
@@ -312,15 +342,19 @@ public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
             total += values[i];
         }
 
-        if (m_showPieTexts)
+        for (int i = 0; i < values.length; i++)
         {
-            for (int i = 0; i < values.length; i++)
-            {
-                final double value = values[i] / total;
+            final double value = (values[i] / total) * 100;
 
-                getTexts().get(i).setText(getLabel(value * 100));
+            if (m_showPieTexts)
+            {
+                getTexts().get(i).setText(getLabel(value));
             }
+
+            m_percents.set(i, value);
         }
+
+        buildLegend();
     }
 
     public Group getSlices()
@@ -355,9 +389,9 @@ public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
         m_labels.removeFromParent();
         m_pieSlices.clear();
         m_slices.removeFromParent();
-        if (m_tooltip != null) 
+        if (m_tooltip != null)
         {
-            m_tooltip.removeFromParent();        
+            m_tooltip.removeFromParent();
         }
         super.clear();
     }
@@ -383,9 +417,26 @@ public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
         {
             if (!slice.getID().equals(sliceID))
             {
-                slice.animate(LINEAR, toPropertyList(ALPHA(alpha)), getDefaultAnimationDuration());
+                GWT.log(slice.getID() + " From: " + slice.getAlpha() + " To: " + alpha);
+
+                // test
+                slice.setAlpha(slice.getAlpha());
+
+                if (slice.getAlpha() != alpha)
+                {
+                    slice.animate(LINEAR, toPropertyList(ALPHA(alpha)), getDefaultAnimationDuration());
+                }
+                else
+                {
+
+                }
             }
         }
+    }
+
+    protected void setColorPalette(ColorPalette palette)
+    {
+        m_colorPalette = palette;
     }
 
     @Override
@@ -405,8 +456,10 @@ public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
 
             legend.removeFromParent();
         }
-        super.buildLegend();
-
+      
+            super.buildLegend();
+      
+        
         // Set legend entries.
         PieChartData data = getData();
         if (legend != null && getData().getDataTable() != null)
@@ -420,9 +473,16 @@ public class PieChart extends AbstractChart<PieChart> implements IBuildedChart
                     String value = values[x];
                     legend.add(new ChartLegend.ChartLegendEntry(value, getColor(x)));
                 }
-            }
+            }  
+            
             legend.build();
-        }
+            
+            double legendWidth = legend.getWidth();
+            double middle = (getX() + getWidth()) / 2;
+            double position = middle - (legendWidth/2);
+            GWT.log("Legend position: "+ legend.getX() + ", "+ legend.getY());
+            legend.setX(position);       
+        } 
     }
 
     private void buildTooltip()

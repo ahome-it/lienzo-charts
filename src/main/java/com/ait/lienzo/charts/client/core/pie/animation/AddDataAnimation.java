@@ -206,11 +206,7 @@ public class AddDataAnimation extends AbstractPieChartAnimation
 
                 doAnimateText(text, lx- textWidth / 2, ly - textHeight / 2, 1d, 1);              
             }
-        }
-        else
-        {
-            com.google.gwt.core.shared.GWT.log("this shouldn't happen....");         
-        }
+        }       
     }
     
     
